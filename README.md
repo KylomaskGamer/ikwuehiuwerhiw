@@ -50,3 +50,5 @@ the cors extension comes from PenguinMod’s [extension library](https://extensi
 [`https://extensions.penguinmod.com/extensions/NamelessCat/corsproxy.js`](https://extensions.penguinmod.com/extensions/NamelessCat/corsproxy.js)
 
 this was reforamtted by chatgpt
+
+for firefox suers, in case it happens heres the extension i use https://addons.mozilla.org/en-US/firefox/addon/cors-unblock/
