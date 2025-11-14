@@ -52,3 +52,19 @@ the cors extension comes from PenguinMod’s [extension library](https://extensi
 this was reforamtted by chatgpt
 
 for firefox suers, in case it happens heres the extension i use https://addons.mozilla.org/en-US/firefox/addon/cors-unblock/
+
+## i hear copyright music and i want to complain about it / take down your repository
+
+NO, PLEASE DON'T! I tried to organize the issues tab so you can report copyright issues there!
+
+and nintendo if youre merciless enough just do it
+
+### I'm not the one who owns the copyright
+
+ill just act as google and say that you have to be the original copyright holder. attempts to takedown as someone else will count as false
+
+you may still use issues in case that i forgot credit or you want to be claimed as ABSOLUTE SH@#&$POST
+
+### I'm the one who owns the copyright
+
+i want to collaborate together. create an issue for the takedown and let me know which file(s) is breaching copyright. i'll try to take it down, but it wont be instant unless you send me a replacement file (i wont pay money at all for the replacements because i dont get money for this anyways)
