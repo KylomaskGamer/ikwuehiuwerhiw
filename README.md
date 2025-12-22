@@ -53,6 +53,8 @@ this was reforamtted by chatgpt
 
 for firefox suers, in case it happens heres the extension i use https://addons.mozilla.org/en-US/firefox/addon/cors-unblock/
 
+UPDATE: cors proxy is ass and now returns 403s when it attempts to fetch something greater than A SINGLE FLIPPING MEGABYTE
+
 ## i hear copyright music and i want to complain about it / take down your repository
 
 NO, PLEASE DON'T! I tried to organize the issues tab so you can report copyright issues there!
