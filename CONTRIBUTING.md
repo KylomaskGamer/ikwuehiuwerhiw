@@ -1,6 +1,6 @@
 # Regular contributions
 - No PRs will be merged here. This is my games
-- This is only a place to host AUDIO/VIDEO files, because PenguinMod has a 32MB limit for uploading files.
+- This is only a place to host AUDIO/VIDEO files, because PenguinMod has a 32MB (56MB for Donators) limit for uploading files.
 
 # Regarding Copyright
 - Please do not report this repo. Instead, submit an **issue** in the issues section of this repository.
