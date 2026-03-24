@@ -2,7 +2,8 @@
     "metadata": {
         "title": "Before It Ends",
         "bpm": 148.0,
-        "offset": -0.438784
+        "offset": -0.438784,
+        "mode":"car"
     },
     "obstacles": [
         2.06,
