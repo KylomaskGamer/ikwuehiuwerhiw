@@ -2,7 +2,8 @@
     "metadata": {
         "title": "Zo",
         "bpm": 127.536511,
-        "offset": -0.260771
+        "offset": -0.260771,
+        "mode":"car"
     },
     "obstacles": [
         10.611,
