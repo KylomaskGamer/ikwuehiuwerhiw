@@ -2,7 +2,8 @@
     "metadata": {
         "title": "9876734123",
         "bpm": 157.0,
-        "offset": -0.047029
+        "offset": -0.047029,
+        "mode":"car"
     },
     "obstacles": [
         1.576,
