@@ -2,7 +2,8 @@
     "metadata": {
         "title": "Muniflora",
         "bpm": 135.0,
-        "offset": -0.053447
+        "offset": -0.053447,
+        "mode":"car"
     },
     "obstacles": [
         7.165,
