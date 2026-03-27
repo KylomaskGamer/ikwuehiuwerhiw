@@ -56,7 +56,7 @@
             ]
         ],
         "offset": -0.087,
-        "mode": "car",
+        "mode": "plane",
         "multi": true
     },
     "obstacles": [
