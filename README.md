@@ -55,6 +55,8 @@ for firefox suers, in case it happens heres the extension i use https://addons.m
 
 UPDATE: cors proxy is ass and now returns 403s when it attempts to fetch something greater than A SINGLE FLIPPING MEGABYTE
 
+UPDATE: so i connected my domain to this luckily, you may now fetch from https://gh.kylomaskgamer.ca
+
 ## i hear copyright music and i want to complain about it / take down your repository
 
 NO, PLEASE DON'T! I tried to organize the issues tab so you can report copyright issues there!
