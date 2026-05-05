@@ -1,5 +1,7 @@
 # ikwuehiuwerhiw
 
+acronym for "i know weird users eat hamburgers in unknown wacky epic rooms how is wurger"
+
 game jam stuff. do **not** steal. grab it from the original source if you need it
 
 ## i don’t hear music! why??? :(
