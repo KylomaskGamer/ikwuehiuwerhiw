@@ -1,0 +1,630 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Events Sheet IDE</title>
+<style>
+  :root{
+    --bg:#1e1e1e; --panel:#252526; --panel2:#2d2d30; --border:#3c3c3c;
+    --fg:#d4d4d4; --muted:#8a8a8a; --accent:#4fc1ff;
+    --s-color:#4caf50; --e-color:#f44336; --x-color:#ff9800; --w-color:#9c27b0;
+    --gutter:#858585; --line-hl:#2a3a4a;
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;height:100%;background:var(--bg);color:var(--fg);
+    font-family:ui-monospace,SFMono-Regular,Consolas,"Liberation Mono",Menlo,monospace;}
+  .app{display:flex;flex-direction:column;height:100vh;}
+
+  /* Top bar */
+  .topbar{display:flex;align-items:center;gap:8px;background:#323233;
+    border-bottom:1px solid var(--border);padding:6px 10px;flex-shrink:0;}
+  .topbar .title{font-weight:600;color:#fff;margin-right:12px;font-size:13px;letter-spacing:.3px;}
+  .topbar button, .topbar label.filebtn{
+    background:#3a3d41;border:1px solid #4a4d51;color:var(--fg);
+    padding:5px 10px;border-radius:4px;cursor:pointer;font-size:12px;}
+  .topbar button:hover, .topbar label.filebtn:hover{background:#45494e;}
+  .topbar button.primary{background:#0e639c;border-color:#1177bb;}
+  .topbar button.primary:hover{background:#1177bb;}
+  .topbar button:disabled{opacity:.4;cursor:not-allowed;}
+  .spacer{flex:1;}
+  .status{font-size:12px;color:var(--muted);}
+  .status.err{color:#ff6b6b;}
+  .status.ok{color:#6bcf6b;}
+
+  /* Main layout */
+  .main{flex:1;display:flex;min-height:0;}
+  .editor-pane{flex:1 1 50%;display:flex;min-width:0;border-right:1px solid var(--border);}
+  .gutter{flex:0 0 auto;width:3.6em;background:var(--panel);color:var(--gutter);text-align:right;
+    padding:10px 6px 10px 0;user-select:none;font-size:13px;line-height:20px;white-space:normal;overflow:hidden;
+    box-sizing:border-box;}
+  .gutter .gl{display:inline-block;width:100%;padding-right:2px;cursor:pointer;border-radius:2px;
+    box-sizing:border-box;}
+  .gutter .gl:hover{background:#3a3d41;color:#fff;}
+  .gutter .gl.resumable:hover::after{content:' ▶';color:#ffd54f;}
+  .gutter .gl.gl-resume{background:#5a4a1a;color:#ffd54f;}
+  .code-wrap{position:relative;flex:1;}
+  textarea#code{
+    position:absolute;inset:0;width:100%;height:100%;resize:none;border:none;outline:none;
+    background:transparent;color:transparent;caret-color:#fff;
+    padding:10px 10px 10px 8px;font-family:inherit;font-size:13px;line-height:20px;
+    white-space:pre;overflow:auto;
+    z-index:2;}
+  pre#highlight{
+    position:absolute;inset:0;margin:0;padding:10px 10px 10px 8px;
+    font-family:inherit;font-size:13px;line-height:20px;
+    white-space:pre;pointer-events:none;overflow:hidden;
+    background:var(--bg);z-index:1;}
+  .tok-directive{color:#4fc1ff;}
+  .tok-s{color:var(--s-color);font-weight:bold;}
+  .tok-e{color:var(--e-color);font-weight:bold;}
+  .tok-x{color:var(--x-color);font-weight:bold;}
+  .tok-w{color:var(--w-color);}
+  .tok-comment{color:#6a9955;font-style:italic;}
+  .tok-error{color:#f44336;text-decoration:underline wavy #f44336;}
+  .tok-plain{color:#555;}
+  .tok-sep{color:#555;}
+  .cur-line{background:var(--line-hl);display:inline-block;width:100%;}
+  .resume-line{outline:1px dashed #ffd54f;outline-offset:-1px;display:inline-block;width:100%;}
+
+  /* Right side: timeline + console */
+  .right-pane{flex:1 1 50%;display:flex;flex-direction:column;min-width:0;}
+  .timeline-wrap{flex:1;overflow:auto;background:var(--panel);}
+  .timeline-header{position:sticky;top:0;background:var(--panel2);
+    border-bottom:1px solid var(--border);padding:6px 10px;font-size:12px;color:var(--muted);
+    display:flex;gap:16px;z-index:3;}
+  .timeline-header b{color:var(--fg);}
+  table.timeline{width:100%;border-collapse:collapse;font-size:12px;}
+  table.timeline td,table.timeline th{padding:3px 8px;border-bottom:1px solid #2a2a2a;white-space:nowrap;}
+  table.timeline th{position:sticky;top:29px;background:var(--panel2);color:var(--muted);
+    text-align:left;z-index:2;font-weight:600;}
+  table.timeline td.ln{color:var(--gutter);text-align:right;}
+  table.timeline td.content{font-family:inherit;}
+  table.timeline tr.active{background:#094771;}
+  table.timeline tr.resume-sel{background:#5a4a1a;box-shadow:inset 3px 0 0 #ffd54f;}
+  table.timeline tr.resume-sel.active{background:#4a6a2a;}
+  table.timeline tr:hover{background:#2f3136;cursor:pointer;}
+
+  .legend{display:flex;flex-wrap:wrap;gap:6px 14px;padding:8px 14px;font-size:11px;
+    border-top:1px solid var(--border);background:#202021;color:var(--muted);}
+  .legend .chip{display:inline-flex;align-items:center;gap:4px;}
+  .legend .swatch{width:10px;height:10px;border-radius:2px;display:inline-block;}
+
+  .console{height:160px;flex-shrink:0;border-top:1px solid var(--border);
+    background:#181818;overflow-y:auto;font-size:12px;padding:6px 10px;}
+  .console .line{padding:1px 0;white-space:pre-wrap;word-break:break-all;}
+  .console .line.error{color:#f44336;}
+  .console .line.warn{color:#ffb300;}
+  .console .line.info{color:#8a8a8a;}
+  .console .line.event{color:#4fc1ff;}
+
+  .help{padding:10px 14px;font-size:12px;color:var(--muted);line-height:1.6;
+    border-top:1px solid var(--border);background:var(--panel2);}
+  .help code{color:var(--accent);}
+  .help b{color:var(--fg);}
+
+  input[type=range]{width:120px;}
+  .bpm-badge{background:#333;border:1px solid #444;border-radius:10px;padding:2px 10px;font-size:12px;}
+</style>
+</head>
+<body>
+<div class="app">
+  <div class="topbar">
+    <div class="title">&#9835; Events Sheet IDE</div>
+    <button id="btnPlay" class="primary">&#9654; Play</button>
+    <button id="btnStop">&#9632; Stop</button>
+    <button id="btnClearResume" title="Clear resume point, next Play starts from the beginning">&#9198; From Start</button>
+    <label class="filebtn">&#128193; Load audio...
+      <input id="audioFile" type="file" accept="audio/*" style="display:none">
+    </label>
+    <label class="filebtn">&#128194; Open .sheet...
+      <input id="openFile" type="file" accept=".sheet,.txt" style="display:none">
+    </label>
+    <button id="btnSave">&#128190; Save .sheet</button>
+    <div class="spacer"></div>
+    <span class="bpm-badge">BPM: <b id="bpmNow">--</b></span>
+    <span class="bpm-badge" id="resumeBadge" style="display:none;">Resume: <b id="resumeLabel">--</b></span>
+    <span class="status" id="status">Ready</span>
+  </div>
+
+  <div class="main">
+    <div class="editor-pane">
+      <div class="gutter" id="gutter">1</div>
+      <div class="code-wrap">
+        <pre id="highlight"></pre><textarea id="code" spellcheck="false"></textarea>
+      </div>
+    </div>
+    <div class="right-pane">
+      <div class="timeline-wrap">
+        <div class="timeline-header">
+          <span>Lines: <b id="lineCount">0</b></span>
+          <span>Duration: <b id="totalDur">0.00s</b></span>
+          <span>Audio: <b id="audioName">none</b></span>
+        </div>
+        <table class="timeline" id="timelineTable">
+          <thead><tr><th>#</th><th>t (s)</th><th>bpm</th><th>event</th></tr></thead>
+          <tbody id="timelineBody"></tbody>
+        </table>
+      </div>
+      <div class="console" id="console"></div>
+    </div>
+  </div>
+
+  <div class="help">
+    Format: <code>@bpm 150</code> and <code>@src song.mp3</code> as header directives (one per line), then one <b>line</b> per step below, holding one or more <code>;</code>-separated actions.
+    <b>s</b> = start tracker here &nbsp;|&nbsp; <b>e</b> = end tracker here &nbsp;|&nbsp;
+    <b>x&lt;number&gt;</b> e.g. <code>x2</code>, <code>x0.5</code> = multiply current bpm by that factor &nbsp;|&nbsp;
+    any other letter (<code>q w r t y ... </code>) is a free, not-yet-wired action slot — each letter gets its own color below so new actions can be added later without clashing &nbsp;|&nbsp;
+    <code>.</code> or blank = plain filler step. Multiple actions on one line: <code>x2;w;q3</code>. The tracker advances one line every <b>2 beats</b> at the current bpm. Lines starting with <code>#</code> are comments.
+    <br><b>Resume from any line:</b> click a row in the timeline (or a line number in the gutter) to set a resume point — the selected line gets a yellow marker. Press <b>Play</b> to start from there, or <b>double-click</b> a row/gutter line to jump in and play immediately. <b>⏮ From Start</b> clears the resume point.
+  </div>
+  <div class="legend" id="legend"></div>
+</div>
+
+<audio id="audioEl" preload="auto"></audio>
+
+<script>
+const codeEl = document.getElementById('code');
+const hlEl = document.getElementById('highlight');
+const gutterEl = document.getElementById('gutter');
+const statusEl = document.getElementById('status');
+const bpmNowEl = document.getElementById('bpmNow');
+const consoleEl = document.getElementById('console');
+const timelineBody = document.getElementById('timelineBody');
+const lineCountEl = document.getElementById('lineCount');
+const totalDurEl = document.getElementById('totalDur');
+const audioNameEl = document.getElementById('audioName');
+const audioEl = document.getElementById('audioEl');
+const btnPlay = document.getElementById('btnPlay');
+const btnStop = document.getElementById('btnStop');
+const btnClearResume = document.getElementById('btnClearResume');
+const resumeBadge = document.getElementById('resumeBadge');
+const resumeLabel = document.getElementById('resumeLabel');
+
+const DEFAULT_SHEET = `@bpm 150
+@src V-TAKA.mp3
+
+# Events sheet. The tracker moves down one line every 2 beats.
+# Multiple actions on one line: separate with ";" e.g. x2;w;q3
+s
+.
+.
+x2
+.
+.
+w
+.
+x0.5;q
+.
+.
+e
+`;
+
+let timeline = []; // {idx, raw, type, value, t, bpmActive}
+let rafId = null;
+let resumeIndex = -1; // index into `timeline`, -1 = play from the start
+
+// --- Action letter color palette -------------------------------------------------
+// a-z each get a distinct, stable color so new action letters can be added later
+// without ever clashing visually. s/e/x keep their original meaningful colors
+// (start=green, end=red, multiply=orange); every other letter gets an auto hue.
+const SPECIAL_ACTION_COLORS = { s:'#4caf50', e:'#f44336', x:'#ff9800' };
+const LETTER_COLORS = {};
+(function buildPalette(){
+  const letters = 'abcdefghijklmnopqrstuvwxyz'.split('');
+  const others = letters.filter(ch => !SPECIAL_ACTION_COLORS[ch]);
+  others.forEach((ch, i)=>{
+    const hue = Math.round((i * 360) / others.length);
+    LETTER_COLORS[ch] = `hsl(${hue}, 70%, 68%)`;
+  });
+  Object.assign(LETTER_COLORS, SPECIAL_ACTION_COLORS);
+})();
+
+function renderLegend(){
+  const legendEl = document.getElementById('legend');
+  const letters = 'sexqwrtyuiopadfghjklzcvbnm'.split(''); // s,e,x first (meaningful), rest alphabetical-ish
+  legendEl.innerHTML = letters.map(ch=>{
+    const label = ch==='s' ? 's=start' : ch==='e' ? 'e=end' : ch==='x' ? 'x&lt;n&gt;=bpm' : ch;
+    return `<span class="chip"><span class="swatch" style="background:${LETTER_COLORS[ch]}"></span>${label}</span>`;
+  }).join('');
+}
+
+function escapeHtml(s){
+  return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+}
+
+// Parses one body line (not blank/comment/directive) into its ';'-separated actions.
+// Each action is a single letter optionally followed by a free-form argument
+// (e.g. "x2" -> letter x, arg "2"; "w" -> letter w, no arg; "q3" -> letter q, arg "3").
+function tokenizeLine(raw){
+  const rawSegments = raw.split(';');
+  const segInfos = [];
+  let hasStart = false, hasEnd = false;
+  const multipliers = [];
+  const customs = [];
+
+  rawSegments.forEach(segRaw=>{
+    const segTrim = segRaw.trim();
+    if(segTrim === ''){ segInfos.push({text:segRaw, kind:'filler'}); return; }
+    const m = segTrim.match(/^([A-Za-z])(.*)$/);
+    if(!m){ segInfos.push({text:segRaw, kind:'filler'}); return; } // e.g. "."
+    const letter = m[1].toLowerCase();
+    const argRaw = m[2].trim();
+    if(letter === 'x'){
+      const num = parseFloat(argRaw);
+      if(argRaw !== '' && !isNaN(num)){
+        multipliers.push(num);
+        segInfos.push({text:segRaw, kind:'x', color:LETTER_COLORS.x, value:num});
+      } else {
+        segInfos.push({text:segRaw, kind:'x-invalid'});
+      }
+      return;
+    }
+    if(letter === 's' && argRaw === ''){ hasStart = true; segInfos.push({text:segRaw, kind:'s', color:LETTER_COLORS.s}); return; }
+    if(letter === 'e' && argRaw === ''){ hasEnd = true; segInfos.push({text:segRaw, kind:'e', color:LETTER_COLORS.e}); return; }
+    customs.push({letter, arg:argRaw});
+    segInfos.push({text:segRaw, kind:'custom', color:LETTER_COLORS[letter] || '#9cdcfe', letter});
+  });
+
+  return { kind:'actions', segInfos, hasStart, hasEnd, multipliers, customs };
+}
+
+// Builds the colored-span markup for a single raw line (used by both the editor
+// pane and the timeline table "event" column, so they always render identically).
+function lineToHtml(raw){
+  const t = raw.trim();
+  if(t === '') return ' ';
+  if(t.startsWith('@bpm') || t.startsWith('@src')) return `<span class="tok-directive">${escapeHtml(raw)}</span>`;
+  if(t.startsWith('#')) return `<span class="tok-comment">${escapeHtml(raw)}</span>`;
+  const info = tokenizeLine(raw);
+  return info.segInfos.map(seg=>{
+    const esc = escapeHtml(seg.text) || '';
+    if(seg.kind === 'filler') return `<span class="tok-plain">${esc}</span>`;
+    if(seg.kind === 'x-invalid') return `<span class="tok-error">${esc}</span>`;
+    const bold = (seg.kind==='s' || seg.kind==='e' || seg.kind==='x') ? 'font-weight:bold;' : '';
+    return `<span style="color:${seg.color};${bold}">${esc}</span>`;
+  }).join('<span class="tok-sep">;</span>');
+}
+
+function renderHighlight(){
+  const lines = codeEl.value.split('\n');
+  // gutter: one clickable span per line, marked 'resumable' if it maps to a timeline entry
+  const resumableFileLines = new Set(timeline.map(e=>e.idx));
+  const resumeFileLine = (resumeIndex>=0 && timeline[resumeIndex]) ? timeline[resumeIndex].idx : -1;
+  gutterEl.innerHTML = lines.map((_,i)=>{
+    const resumable = resumableFileLines.has(i);
+    const cls = 'gl' + (resumable?' resumable':'') + (i===resumeFileLine?' gl-resume':'');
+    return `<span class="${cls}" data-line="${i}">${i+1}</span>`;
+  }).join('');
+  const html = lines.map(raw=> lineToHtml(raw)).join('\n');
+  hlEl.innerHTML = html;
+}
+
+function syncScroll(){
+  hlEl.scrollTop = codeEl.scrollTop;
+  hlEl.scrollLeft = codeEl.scrollLeft;
+  gutterEl.scrollTop = codeEl.scrollTop;
+}
+
+function log(msg, cls){
+  const div = document.createElement('div');
+  div.className = 'line ' + (cls||'info');
+  div.textContent = msg;
+  consoleEl.appendChild(div);
+  consoleEl.scrollTop = consoleEl.scrollHeight;
+}
+function clearLog(){ consoleEl.innerHTML=''; }
+
+function parseAndBuildTimeline(){
+  clearLog();
+  const lines = codeEl.value.split('\n');
+  let bpm = null, src = null;
+  const errors = [];
+  const bodyLines = []; // {idx(0-based file line), raw, info}
+
+  lines.forEach((raw, idx)=>{
+    const t = raw.trim();
+    if(t === '') { bodyLines.push({idx, raw, info:{hasStart:false, hasEnd:false, multipliers:[], customs:[]}}); return; }
+    if(t.startsWith('@bpm')){
+      const m = t.match(/^@bpm\s+([\d.]+)/i);
+      if(m) bpm = parseFloat(m[1]);
+      else errors.push(`Line ${idx+1}: malformed @bpm directive`);
+      return; // directives don't occupy tracker lines
+    }
+    if(t.startsWith('@src')){
+      const m = t.match(/^@src\s+(.+)$/i);
+      if(m) src = m[1].trim();
+      else errors.push(`Line ${idx+1}: malformed @src directive`);
+      return;
+    }
+    if(t.startsWith('#')){ bodyLines.push({idx, raw, info:{hasStart:false, hasEnd:false, multipliers:[], customs:[]}}); return; }
+    const info = tokenizeLine(raw);
+    info.segInfos.forEach(seg=>{
+      if(seg.kind === 'x-invalid'){
+        errors.push(`Line ${idx+1}: "${seg.text.trim()}" looks like a multiplier but has no valid number (expected x<number>, e.g. x2 or x0.5)`);
+      }
+    });
+    bodyLines.push({idx, raw, info});
+  });
+
+  if(bpm === null){ errors.push('Missing @bpm directive'); bpm = 120; }
+  if(src === null){ errors.push('Missing @src directive (no default audio source)'); }
+
+  const sCount = bodyLines.filter(l=>l.info.hasStart).length;
+  const eCount = bodyLines.filter(l=>l.info.hasEnd).length;
+  if(sCount === 0) errors.push('No "s" action found');
+  if(sCount > 1) errors.push(`Multiple "s" actions found (${sCount}) — only the first will be used`);
+  if(eCount === 0) errors.push('No "e" action found');
+
+  errors.forEach(e=>log(e,'error'));
+
+  // Build timeline starting at the first line carrying an 's' action, walking forward.
+  timeline = [];
+  const startPos = bodyLines.findIndex(l=>l.info.hasStart);
+  if(startPos === -1){
+    render_timeline_table([]);
+    return { bpm, src, errors, ok:false };
+  }
+
+  let curBpm = bpm;
+  let t = 0;
+  for(let i = startPos; i < bodyLines.length; i++){
+    const bl = bodyLines[i];
+    const entry = {
+      idx: bl.idx, raw: bl.raw, t, bpmActive: curBpm,
+      hasStart: bl.info.hasStart, hasEnd: bl.info.hasEnd,
+      multipliers: bl.info.multipliers || [], customs: bl.info.customs || []
+    };
+    if(entry.multipliers.length){
+      entry.multipliers.forEach(factor=>{
+        curBpm = curBpm * factor;
+        log(`Line ${bl.idx+1}: bpm x${factor} -> ${curBpm.toFixed(2)} bpm`, 'event');
+      });
+      entry.bpmActive = curBpm;
+    }
+    entry.customs.forEach(c=>{
+      log(`Line ${bl.idx+1}: action '${c.letter}'${c.arg ? ' ('+c.arg+')' : ''} fired (not yet wired to engine logic)`, 'event');
+    });
+    // row type for the timeline table's left accent: priority e > s > x > custom > blank
+    entry.type = entry.hasEnd ? 'e' : entry.hasStart ? 's' : entry.multipliers.length ? 'x'
+      : entry.customs.length ? 'custom' : (bl.raw.trim()==='' ? 'blank' : 'step');
+    timeline.push(entry);
+    if(entry.hasEnd){
+      log(`Line ${bl.idx+1}: end reached at t=${t.toFixed(3)}s`, 'event');
+      break;
+    }
+    const beatDur = 60 / curBpm;
+    t += 2 * beatDur; // every 2 beats, move down
+  }
+
+  render_timeline_table(timeline);
+  lineCountEl.textContent = timeline.length;
+  totalDurEl.textContent = (timeline.length? timeline[timeline.length-1].t.toFixed(2) : '0.00') + 's';
+  bpmNowEl.textContent = bpm.toFixed(0);
+
+  const ok = errors.length === 0;
+  statusEl.textContent = ok ? 'Parsed OK' : `${errors.length} issue(s)`;
+  statusEl.className = 'status ' + (ok ? 'ok':'err');
+
+  return { bpm, src, errors, ok };
+}
+
+function render_timeline_table(tl){
+  timelineBody.innerHTML = tl.map((e,i)=>{
+    const cls = 'type-' + e.type + (i===resumeIndex ? ' resume-sel' : '');
+    const content = e.raw.trim()==='' ? '<span class="tok-plain">(step)</span>' : lineToHtml(e.raw);
+    return `<tr data-i="${i}" class="${cls}"><td class="ln">${e.idx+1}</td><td>${e.t.toFixed(3)}</td><td>${e.bpmActive.toFixed(1)}</td><td class="content">${content}</td></tr>`;
+  }).join('');
+}
+
+timelineBody.addEventListener('click', (ev)=>{
+  const row = ev.target.closest('tr[data-i]');
+  if(!row) return;
+  setResumePoint(parseInt(row.dataset.i, 10));
+});
+timelineBody.addEventListener('dblclick', (ev)=>{
+  const row = ev.target.closest('tr[data-i]');
+  if(!row) return;
+  if(setResumePoint(parseInt(row.dataset.i, 10))) startPlayback();
+});
+
+gutterEl.addEventListener('click', (ev)=>{
+  const span = ev.target.closest('span.gl');
+  if(!span) return;
+  const fileLine = parseInt(span.dataset.line, 10);
+  const tlIndex = timeline.findIndex(e=>e.idx === fileLine);
+  if(tlIndex === -1){
+    log(`Line ${fileLine+1} isn't part of the playable sheet (no tracker event there).`, 'warn');
+    return;
+  }
+  setResumePoint(tlIndex);
+});
+gutterEl.addEventListener('dblclick', (ev)=>{
+  const span = ev.target.closest('span.gl');
+  if(!span) return;
+  const fileLine = parseInt(span.dataset.line, 10);
+  const tlIndex = timeline.findIndex(e=>e.idx === fileLine);
+  if(tlIndex === -1) return;
+  if(setResumePoint(tlIndex)) startPlayback();
+});
+
+btnClearResume.addEventListener('click', ()=>{
+  clearResumePoint();
+  log('Resume point cleared — next Play starts from the beginning.', 'info');
+});
+
+function highlightCurrentLine(fileLineIdx){
+  // code editor cursor line highlight
+  const lines = codeEl.value.split('\n');
+  const resumeFileLine = (resumeIndex>=0 && timeline[resumeIndex]) ? timeline[resumeIndex].idx : -1;
+  const html = lines.map((raw,i)=>{
+    const inner = lineToHtml(raw);
+    if(i === fileLineIdx) return `<span class="cur-line">${inner}</span>`;
+    if(i === resumeFileLine) return `<span class="resume-line">${inner}</span>`;
+    return inner;
+  }).join('\n');
+  hlEl.innerHTML = html;
+}
+
+function updateResumeBadge(){
+  if(resumeIndex >= 0 && timeline[resumeIndex]){
+    const e = timeline[resumeIndex];
+    resumeBadge.style.display = '';
+    resumeLabel.textContent = `line ${e.idx+1} @ ${e.t.toFixed(2)}s`;
+  } else {
+    resumeBadge.style.display = 'none';
+  }
+}
+
+function setResumePoint(timelineIndex){
+  if(timelineIndex < 0 || timelineIndex >= timeline.length){
+    log(`Can't resume there — no event on that line yet.`, 'warn');
+    return false;
+  }
+  resumeIndex = timelineIndex;
+  const rows = timelineBody.querySelectorAll('tr');
+  rows.forEach(r=>r.classList.remove('resume-sel'));
+  if(rows[timelineIndex]) rows[timelineIndex].classList.add('resume-sel');
+  updateResumeBadge();
+  renderHighlight();
+  highlightCurrentLine(-1);
+  log(`Resume point set: line ${timeline[timelineIndex].idx+1} (t=${timeline[timelineIndex].t.toFixed(3)}s, bpm=${timeline[timelineIndex].bpmActive.toFixed(1)})`, 'info');
+  return true;
+}
+
+function clearResumePoint(){
+  resumeIndex = -1;
+  const rows = timelineBody.querySelectorAll('tr');
+  rows.forEach(r=>r.classList.remove('resume-sel'));
+  updateResumeBadge();
+  renderHighlight();
+}
+
+function updateTimelineHighlight(activeIndex){
+  const rows = timelineBody.querySelectorAll('tr');
+  rows.forEach(r=>r.classList.remove('active'));
+  if(activeIndex >= 0 && rows[activeIndex]){
+    rows[activeIndex].classList.add('active');
+    rows[activeIndex].scrollIntoView({block:'center', behavior:'smooth'});
+  }
+}
+
+let currentParsed = null;
+
+function doParse(){
+  currentParsed = parseAndBuildTimeline();
+  renderHighlight();
+  return currentParsed;
+}
+
+codeEl.addEventListener('input', ()=>{ resumeIndex = -1; updateResumeBadge(); doParse(); });
+codeEl.addEventListener('scroll', syncScroll);
+
+document.getElementById('audioFile').addEventListener('change', (e)=>{
+  const f = e.target.files[0];
+  if(!f) return;
+  const url = URL.createObjectURL(f);
+  audioEl.src = url;
+  audioNameEl.textContent = f.name;
+  log(`Loaded audio file: ${f.name}`, 'info');
+});
+
+document.getElementById('openFile').addEventListener('change', (e)=>{
+  const f = e.target.files[0];
+  if(!f) return;
+  const reader = new FileReader();
+  reader.onload = ()=>{
+    codeEl.value = reader.result;
+    doParse();
+    log(`Opened sheet: ${f.name}`, 'info');
+  };
+  reader.readAsText(f);
+});
+
+document.getElementById('btnSave').addEventListener('click', ()=>{
+  const blob = new Blob([codeEl.value], {type:'text/plain'});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url; a.download = 'events.sheet';
+  a.click();
+  URL.revokeObjectURL(url);
+});
+
+function stopPlayback(){
+  audioEl.pause();
+  audioEl.currentTime = 0;
+  if(rafId) cancelAnimationFrame(rafId);
+  rafId = null;
+  updateTimelineHighlight(-1);
+  highlightCurrentLine(-1);
+  btnPlay.innerHTML = '&#9654; Play';
+}
+
+btnStop.addEventListener('click', stopPlayback);
+
+function startPlayback(){
+  if(rafId) cancelAnimationFrame(rafId);
+  rafId = null;
+  const parsed = doParse();
+  if(!timeline.length){
+    log('Cannot play: no valid timeline (need an "s" line).', 'error');
+    return;
+  }
+  // If no file manually loaded, try @src as a URL/relative path
+  if(!audioEl.src && parsed.src){
+    audioEl.src = parsed.src;
+    audioNameEl.textContent = parsed.src + ' (from @src)';
+  }
+  if(!audioEl.src){
+    log('No audio loaded. Use "Load audio..." or set a reachable @src path, then press Play again.', 'warn');
+  }
+  const startEntry = (resumeIndex >= 0 && timeline[resumeIndex]) ? timeline[resumeIndex] : timeline[0];
+  const startAt = startEntry ? startEntry.t : 0;
+  audioEl.currentTime = startAt;
+  if(startEntry) bpmNowEl.textContent = startEntry.bpmActive.toFixed(1);
+  log(`Starting playback at line ${startEntry.idx+1} (t=${startAt.toFixed(3)}s, bpm=${startEntry.bpmActive.toFixed(1)})`, 'event');
+  const playPromise = audioEl.play();
+  if(playPromise && playPromise.catch) playPromise.catch(err=>log('Audio play failed: '+err.message,'error'));
+  btnPlay.innerHTML = '&#10074;&#10074; Pause';
+
+  function tick(){
+    const ct = audioEl.currentTime;
+    // find last timeline entry whose t <= ct
+    let activeIndex = -1;
+    for(let i=0;i<timeline.length;i++){
+      if(timeline[i].t <= ct) activeIndex = i; else break;
+    }
+    updateTimelineHighlight(activeIndex);
+    if(activeIndex >= 0){
+      highlightCurrentLine(timeline[activeIndex].idx);
+      bpmNowEl.textContent = timeline[activeIndex].bpmActive.toFixed(1);
+      if(timeline[activeIndex].hasEnd && ct >= timeline[activeIndex].t){
+        stopPlayback();
+        log('Reached end event — stopping.', 'event');
+        return;
+      }
+    }
+    rafId = requestAnimationFrame(tick);
+  }
+  rafId = requestAnimationFrame(tick);
+}
+
+btnPlay.addEventListener('click', ()=>{
+  if(!audioEl.paused){
+    audioEl.pause();
+    if(rafId) cancelAnimationFrame(rafId);
+    rafId = null;
+    btnPlay.innerHTML = '&#9654; Play';
+    return;
+  }
+  startPlayback();
+});
+
+audioEl.addEventListener('ended', stopPlayback);
+
+// init
+codeEl.value = DEFAULT_SHEET;
+renderLegend();
+doParse();
+</script>
+</body>
+</html>
