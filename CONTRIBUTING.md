@@ -8,6 +8,9 @@
 - If such copyright request is not claimed from an official, takedown will NOT happen and you wont get punished for it because YOU STILL HAVE COPY-RIGHT (get it? copyright rights?)
 - Otherwise, it would be appreciated to have a replacement song associated with the issue. That song must have a similar intent of the original audio file.
 - If theres no replacement file suggestion present, takedown will NOT be effective immediately.
+- To anything related to BONUS levels, such as VibePONG or The Insane Quest For Orange Juice CUSTOM section, a replacement is NOT required and removal will happen as soon as I can. If the content is still not removed feel free to yell at me
+- Oh yeah. If i'm missing credit of something of any file hosted here, let me know as soon as possible. 
 
 # Regarding cheeseburgers
 - cheeseburger
+- do NOT the hotdog
