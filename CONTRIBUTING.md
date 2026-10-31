@@ -64,3 +64,9 @@ You don't need to be the copyright owner to point out missing or incorrect credi
 - if in ANY SCENARIO that the hotdog, DO NOT
 - under no circumstances
 - failure to comply WILL
+
+---
+
+## AI assistance
+
+Parts of this document were reformatted and reworded with assistance from ChatGPT (OpenAI). The original ideas, policies, and content are mine.
