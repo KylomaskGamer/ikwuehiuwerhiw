@@ -1,43 +1,50 @@
 # ikwuehiuwerhiw
 
-acronym for "i know weird users eat hamburgers in unknown wacky epic rooms how is wurger"
+Acronym for "I Know Weird Users Eat Hamburgers In Unknown Wacky Epic Rooms How Is Wurger"
 
-game jam stuff. do **not** steal. grab it from the original source if you need it
+Game jam stuff. Do **not** steal. Grab it from the original source if you need it.
+
+> [!IMPORTANT]
+> If you believe a file hosted here infringes your copyright, please read [`CONTRIBUTING.md`](CONTRIBUTING.md) for information on reporting it.
 
 ## i don’t hear music! why??? :(
 
-tl;dr: blame it all on [CORS](https://developer.mozilla.org/en-US/docs/Web/HTTP/Guides/CORS/Errors)
+TL;DR: blame it all on [CORS](https://developer.mozilla.org/en-US/docs/Web/HTTP/Guides/CORS/Errors).
 
-ntl;wtr, sometimes the content just… refuses to work
-like some server out there decided `'that request is MAYBEEEE bad'`
-don’t be mean to the poor server though, it’s just doing its thing 😅
-also, staying under the 32MB upload limit for PenguinMod can be annoying
-(i haven’t donated yet, but i probably should… forgot lol)
+NTL;WTR, sometimes the content just… refuses to work.
 
-here’s a simple workaround if you want to avoid hitting the upload limit:
+Like some server out there decided `'that request is MAYBEEEE bad'`.
 
-1. upload your files to GitHub
-2. link them in your project
-3. use a pseudocode script like this:
+Don't be mean to the poor server, though. It's just doing its thing 😅
+
+Also, staying under PenguinMod's 32 MB upload limit can be annoying (56 MB for Donators).
+
+(I haven't donated yet, but I probably should… forgot lol)
+
+Here's a simple workaround if you want to avoid hitting the upload limit:
+
+1. Upload your files to GitHub.
+2. Link them in your project.
+3. Use a pseudocode script like this:
 
 ```py
 from pm_Project import Stage
-    
-songlist = ["poop","pee","pooppoop","peepee"]
-    
+
+songlist = ["poop", "pee", "pooppoop", "peepee"]
+
 for i, v in songlist:
     Stage.add_sound(src="https://github.com/KylomaskGamer/ikwuehiuwerhiw/" + v)
 ```
 
-sometimes PenguinMod’s `fetch()` complains with `"nu uh, lacks a header thingy i forgot"`
-so here’s the ULTIMATE workaround in a **chaotic pseudoscript**
-(mix of Python, JS, Lua, and maybe stuff i made up):
+Sometimes PenguinMod's `fetch()` complains with `"nu uh, lacks a header thingy i forgot"`.
+
+So here's the ULTIMATE workaround in a **chaotic pseudoscript** (a mix of Python, JS, Lua, and maybe stuff I made up):
 
 ```py
 from pm_Project import Stage
 import cors
 
-songlist = ["poop","pee","pooppoop","peepee"]
+songlist = ["poop", "pee", "pooppoop", "peepee"]
 req = fetch("https://github.com/KylomaskGamer/ikwuehiuwerhiw")
 cors_required = str(req.error).includes("NetworkError")
 
@@ -48,29 +55,31 @@ for i, v in songlist:
         Stage.add_sound(src="https://github.com/KylomaskGamer/ikwuehiuwerhiw/" + v)
 ```
 
-the cors extension comes from PenguinMod’s [extension library](https://extensions.penguinmod.com), specifically:
+The CORS extension comes from PenguinMod's [extension library](https://extensions.penguinmod.com), specifically:
+
 [`https://extensions.penguinmod.com/extensions/NamelessCat/corsproxy.js`](https://extensions.penguinmod.com/extensions/NamelessCat/corsproxy.js)
 
-this was reforamtted by chatgpt
+This was reformatted by ChatGPT.
 
-for firefox suers, in case it happens heres the extension i use https://addons.mozilla.org/en-US/firefox/addon/cors-unblock/
+For Firefox users, if you run into this issue, here's the extension I use:
 
-UPDATE: cors proxy is ass and now returns 403s when it attempts to fetch something greater than A SINGLE FLIPPING MEGABYTE
+https://addons.mozilla.org/en-US/firefox/addon/cors-unblock/
 
-UPDATE: so i connected my domain to this luckily, you may now fetch from https://gh.kylomaskgamer.ca
+**UPDATE:** The CORS proxy is ass and now returns 403 errors when it attempts to fetch something greater than A SINGLE FLIPPING MEGABYTE.
 
-## i hear copyright music and i want to complain about it / take down your repository
+**UPDATE:** Luckily, I connected my domain to this. You can now fetch files from:
 
-NO, PLEASE DON'T! I tried to organize the issues tab so you can report copyright issues there!
+https://gh.kylomaskgamer.ca
 
-and nintendo if youre merciless enough just do it
+## copyright concerns
 
-### I'm not the one who owns the copyright
+Hear copyrighted music and want to report it?
 
-ill just act as google and say that you have to be the original copyright holder. attempts to takedown as someone else will count as false
+Please don't immediately panic or assume you need to file a formal notice. I've organized the Issues tab so copyright concerns can be reported there.
 
-you may still use issues in case that i forgot credit or you want to be claimed as ABSOLUTE SH@#&$POST
+> [!IMPORTANT]
+> GitHub Issues are my preferred first point of contact, but you're still welcome to use formal legal procedures.
 
-### I'm the one who owns the copyright
+See [`CONTRIBUTING.md`](CONTRIBUTING.md) for the full procedure.
 
-i want to collaborate together. create an issue for the takedown and let me know which file(s) is breaching copyright. i'll try to take it down, but it wont be instant unless you send me a replacement file (i wont pay money at all for the replacements because i dont get money for this anyways)
+And Nintendo, if you're merciless enough, just do it.
