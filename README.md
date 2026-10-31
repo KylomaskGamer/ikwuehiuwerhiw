@@ -11,7 +11,7 @@ Game jam stuff. Do **not** steal. Grab it from the original source if you need i
 
 TL;DR: blame it all on [CORS](https://developer.mozilla.org/en-US/docs/Web/HTTP/Guides/CORS/Errors).
 
-NTL;WTR, sometimes the content just… refuses to work.
+NTL;WR, sometimes the content just dont spawn
 
 Like some server out there decided `'that request is MAYBEEEE bad'`.
 
@@ -19,7 +19,7 @@ Don't be mean to the poor server, though. It's just doing its thing 😅
 
 Also, staying under PenguinMod's 32 MB upload limit can be annoying (56 MB for Donators).
 
-(I haven't donated yet, but I probably should… forgot lol)
+~~(I haven't donated yet, but I probably should… forgot lol)~~ i donated yes i did im a donor now theres a patreon (im still using this because audio files are as big as a double angus cheeseburger at harveys)
 
 Here's a simple workaround if you want to avoid hitting the upload limit:
 
@@ -83,3 +83,9 @@ Please don't immediately panic or assume you need to file a formal notice. I've 
 See [`CONTRIBUTING.md`](CONTRIBUTING.md) for the full procedure.
 
 And Nintendo, if you're merciless enough, just do it.
+
+---
+
+## AI assistance
+
+Parts of this document were reformatted and reworded with assistance from ChatGPT (OpenAI). The original ideas, policies, and content are mine.
